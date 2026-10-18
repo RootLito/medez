@@ -57,7 +57,7 @@ $login = function () {
 <div class="max-w-md mx-auto space-y-6">
     <div class="text-center space-y-2">
         <div class="flex justify-center">
-            <img src="https://fluxui.dev/img/demo/logo.png" alt="Logo" class="h-12 w-auto" />
+            <img src="{{ asset('malalag.png') }}" alt="Malalag Logo" width="128">
         </div>
         <flux:heading size="xl" level="1">MPDC Admin Portal</flux:heading>
         <flux:subheading>Enter your credentials to access the administrative dashboard</flux:subheading>

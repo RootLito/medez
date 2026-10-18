@@ -94,7 +94,7 @@ state([
         </div>
         <div class="flex items-center gap-2">
             <flux:button icon="arrow-path" size="sm" variant="subtle">Refresh Data</flux:button>
-            <flux:button variant="primary" icon="plus" size="sm" wire:navigate href="{{ route('admin.applications.create-walkin') }}">
+            <flux:button variant="primary" icon="plus" size="sm" wire:navigate href="{{ route('admin.applications.walkin-index') }}">
                 Encode Walk-In
             </flux:button>
         </div>
