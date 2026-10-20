@@ -37,6 +37,11 @@
                 Applications
             </flux:navlist.item>
 
+            <flux:navlist.item icon="bell" href="{{ route('client.notification') }}"
+                :current="request()->routeIs('client.notification')" wire:navigate>
+                Notification
+            </flux:navlist.item>
+
             <flux:navlist.item icon="user" href="{{ route('client.profile') }}"
                 :current="request()->routeIs('client.profile')" wire:navigate>
                 Profile

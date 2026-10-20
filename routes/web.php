@@ -25,6 +25,7 @@ Route::prefix('client')->name('client.')->group(function () {
         Volt::route('/applications/create', 'client.applications.create')->name('applications.create');
         Volt::route('/applications/{clearance}', 'client.applications.show')->name('applications.show');
         Volt::route('/applications/{clearance}/edit', 'client.applications.edit')->name('applications.edit');
+        Volt::route('/notification', 'client.notification.index')->name('notification');
         Volt::route('/profile', 'client.profile.index')->name('profile');
 
         Route::post('/logout', function () {

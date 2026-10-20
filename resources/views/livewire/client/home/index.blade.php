@@ -48,7 +48,7 @@ mount(function () {
             @endphp
 
             <flux:heading size="xl" level="1">Welcome back, {{ $fullName }}!</flux:heading>
-            <flux:subheading size="lg">Overview of your locational clearance applications and status.</flux:subheading>
+            <flux:subheading>Overview of your locational clearance applications and status.</flux:subheading>
         </div>
 
         <div>

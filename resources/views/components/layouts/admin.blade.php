@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ $title ?? 'MPDC Admin Portal' }}</title>
-    <link rel="shortcut icon" href="{{ asset('malalag.jpg') }}" type="image/x-icon">
+    <link rel="shortcut icon" href="{{ asset('malalag.png') }}" type="image/x-icon">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @fluxAppearance
 </head>
@@ -25,7 +25,7 @@
     <flux:sidebar sticky collapsible="mobile"
         class="bg-zinc-50 dark:bg-zinc-900 border-r border-zinc-200 dark:border-zinc-700">
         <flux:sidebar.header>
-            <flux:sidebar.brand href="{{ route('admin.dashboard') }}" logo="{{ asset('malalag.jpg') }}"
+            <flux:sidebar.brand href="{{ route('admin.dashboard') }}" logo="{{ asset('malalag.png') }}"
                 name="MPDC Portal" class="px-2 font-bold"/>
             <flux:sidebar.collapse class="lg:hidden" />
         </flux:sidebar.header>
