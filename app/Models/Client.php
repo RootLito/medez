@@ -23,6 +23,7 @@ class Client extends Authenticatable
     protected $fillable = [
         'first_name',
         'middle_name',
+        'last_name',
         'birthdate',
         'address',
         'username',
@@ -51,6 +52,16 @@ class Client extends Authenticatable
             'birthdate' => 'date',
             'password' => 'hashed',
         ];
+    }
+
+    /**
+     * Get the client's full name.
+     */
+    protected function fullName(): Attribute
+    {
+        return Attribute::make(
+            get: fn() => trim("{$this->first_name} " . ($this->middle_name ? "{$this->middle_name} " : "") . "{$this->last_name}")
+        );
     }
 
     /**

@@ -12,6 +12,8 @@ class AppStatus extends Model
 
     protected $fillable = [
         'application_id',
+        'admin_id',
+        'status',
         'remarks',
         'is_read',
     ];
@@ -23,5 +25,10 @@ class AppStatus extends Model
     public function locClearance(): BelongsTo
     {
         return $this->belongsTo(LocClearance::class, 'application_id');
+    }
+
+    public function admin(): BelongsTo
+    {
+        return $this->belongsTo(Admin::class, 'admin_id');
     }
 }
