@@ -9,12 +9,21 @@ usesPagination();
 layout('components.layouts.client');
 title('Notifications');
 
-$markAsRead = function ($id) {
+// Automatically marks as read when either action is clicked, then redirects
+$openApplication = function ($id, $mode = 'view') {
     $notification = AppStatus::whereHas('locClearance', function ($query) {
         $query->where('client_id', auth('client')->id());
     })->findOrFail($id);
 
-    $notification->update(['is_read' => true]);
+    if (! $notification->is_read) {
+        $notification->update(['is_read' => true]);
+    }
+
+    $targetRoute = $mode === 'edit'
+        ? route('client.applications.edit', $notification->application_id)
+        : route('client.applications.show', $notification->application_id);
+
+    return $this->redirect($targetRoute, navigate: true);
 };
 
 $markAllAsRead = function () {
@@ -40,7 +49,7 @@ with(function () {
 
 {{-- wire:poll.5s keeps notifications updated in real-time --}}
 <div wire:poll.5s class="max-w-3xl mx-auto space-y-4 px-1 sm:px-0">
-    <!-- Mobile-First Header -->
+    <!-- Header -->
     <div class="flex items-center justify-between gap-3 pb-1 border-b border-zinc-200/80 dark:border-zinc-800">
         <div>
             <div class="flex items-center gap-2">
@@ -49,7 +58,8 @@ with(function () {
                 <flux:badge size="sm" color="amber">{{ $unreadCount }} new</flux:badge>
                 @endif
             </div>
-            <flux:subheading class="text-xs text-zinc-500">Manage and track your received system notifications.
+            <flux:subheading class="text-xs text-zinc-500">
+                Manage and track updates on your clearance applications.
             </flux:subheading>
         </div>
 
@@ -107,12 +117,11 @@ with(function () {
 
         <!-- Notification Card -->
         <div
-            class="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-sm p-4 transition-all relative border-l-4 {{ $statusConfig['accent'] }} {{ !$item->is_read ? 'bg-zinc-50/70 dark:bg-zinc-800/40 ring-1 ring-blue-500/20' : '' }}">
+            class="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-xs p-4 transition-all relative border-l-4 {{ $statusConfig['accent'] }} {{ !$item->is_read ? 'bg-zinc-50/70 dark:bg-zinc-800/40 ring-1 ring-blue-500/20' : '' }}">
 
-            <!-- Card Top Header (App ID + Status Badge + Timestamp + Dot) -->
+            <!-- Card Top Header (App ID + Status Badge + Timestamp + Unread Dot) -->
             <div class="flex items-start justify-between gap-2 flex-wrap">
                 <div class="flex items-center gap-2 flex-wrap">
-                    <!-- Status Icon -->
                     <div class="p-1.5 rounded-lg {{ $statusConfig['bg'] }} {{ $statusConfig['text'] }} shrink-0">
                         <flux:icon :name="$statusConfig['icon']" class="w-4 h-4" />
                     </div>
@@ -126,7 +135,6 @@ with(function () {
                     </flux:badge>
                 </div>
 
-                <!-- Relative Time & Unread Indicator -->
                 <div class="flex items-center gap-1.5 text-xs text-zinc-400 ml-auto pt-0.5">
                     <span>{{ $item->created_at->diffForHumans() }}</span>
                     @if (!$item->is_read)
@@ -153,35 +161,20 @@ with(function () {
             </div>
             @endif
 
-            <!-- Action Buttons Row (Responsive for touch/phone screens) -->
+            <!-- Action Buttons (Automatically mark as read on click) -->
             <div
-                class="mt-3.5 pt-3 border-t border-zinc-100 dark:border-zinc-800/80 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
+                class="mt-3.5 pt-3 border-t border-zinc-100 dark:border-zinc-800/80 flex items-center justify-end gap-2">
+                <flux:button wire:click="openApplication({{ $item->id }}, 'view')" size="sm" variant="subtle"
+                    icon-trailing="arrow-right" class="flex-1 sm:flex-none justify-center">
+                    View Application
+                </flux:button>
 
-                <!-- Left: Mark As Read -->
-                <div>
-                    @if (!$item->is_read)
-                    <button type="button" wire:click="markAsRead({{ $item->id }})"
-                        class="text-xs text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 transition py-1">
-                        Mark as read
-                    </button>
-                    @endif
-                </div>
-
-                <!-- Right: Buttons -->
-                <div class="flex items-center gap-2">
-                    <flux:button href="{{ route('client.applications.show', $item->application_id) }}" wire:navigate
-                        size="sm" variant="subtle" icon-trailing="arrow-right"
-                        class="flex-1 sm:flex-none justify-center">
-                        View Application
-                    </flux:button>
-
-                    @if ($item->status === 'resubmit')
-                    <flux:button href="{{ route('client.applications.edit', $item->application_id) }}" wire:navigate
-                        size="sm" variant="primary" icon="pencil" class="flex-1 sm:flex-none justify-center">
-                        Update Application
-                    </flux:button>
-                    @endif
-                </div>
+                @if ($item->status === 'resubmit')
+                <flux:button wire:click="openApplication({{ $item->id }}, 'edit')" size="sm" variant="primary"
+                    icon="pencil" class="flex-1 sm:flex-none justify-center">
+                    Update Application
+                </flux:button>
+                @endif
             </div>
         </div>
         @endforeach

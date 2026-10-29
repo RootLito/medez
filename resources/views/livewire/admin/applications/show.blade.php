@@ -351,7 +351,10 @@ $submitDecision = function () {
                     </div>
                     @endforeach
                 </div>
-            </div> <!-- Decision Card -->
+            </div>
+
+            @if (! $clearance->is_archived)
+            <!-- Decision Card (Active Mode) -->
             <div
                 class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-5 shadow-sm space-y-5">
                 <div>
@@ -389,9 +392,23 @@ $submitDecision = function () {
                     </flux:button>
                 </form>
             </div>
+            @else
+            <!-- Archived Notice (Read-Only Mode) -->
+            <div
+                class="bg-amber-500/10 border border-amber-500/20 text-amber-800 dark:text-amber-300 rounded-xl p-4 text-xs space-y-2">
+                <div class="flex items-center gap-2 font-semibold text-sm">
+                    <flux:icon name="archive-box" class="size-4 shrink-0 text-amber-600 dark:text-amber-400" />
+                    <span>Archived Record (Read-Only)</span>
+                </div>
+                <p class="text-[11px] leading-relaxed text-amber-700 dark:text-amber-400">
+                    This application has been archived. Decision updates and notifications are disabled. Restore this
+                    application from the Archived Records page if you need to take action.
+                </p>
+            </div>
+            @endif
 
 
-            <!-- Decision History Timeline -->
+            <!-- Decision History Timeline (Always visible for audit/reference) -->
             @php
             $statusLogs = \App\Models\AppStatus::where('application_id', $clearance->id)->latest()->get();
             @endphp
@@ -403,11 +420,18 @@ $submitDecision = function () {
                 </h4>
                 <div class="space-y-3 max-h-60 overflow-y-auto pr-1">
                     @foreach ($statusLogs as $log)
+                    @php
+                    $logColor = match(strtolower($log->status)) {
+                    'approve', 'approved' => 'green',
+                    'resubmit' => 'yellow',
+                    'pending' => 'blue',
+                    default => 'red',
+                    };
+                    @endphp
                     <div
                         class="p-2.5 rounded-lg bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700/60 space-y-1 text-xs">
                         <div class="flex justify-between items-center">
-                            <flux:badge size="sm"
-                                :color="$log->status === 'approve' ? 'green' : ($log->status === 'resubmit' ? 'amber' : 'red')">
+                            <flux:badge size="sm" :color="$logColor">
                                 {{ ucfirst($log->status) }}
                             </flux:badge>
                             <span class="text-[10px] text-zinc-400">{{ $log->created_at->diffForHumans() }}</span>

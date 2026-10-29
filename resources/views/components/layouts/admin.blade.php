@@ -6,27 +6,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ $title ?? 'MPDC Admin Portal' }}</title>
     <link rel="shortcut icon" href="{{ asset('malalag.png') }}" type="image/x-icon">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @fluxAppearance
 </head>
 
-<body class="min-h-screen bg-white dark:bg-zinc-800 antialiased">
+<body class="min-h-screen bg-white dark:bg-zinc-800 antialiased flex">
     @php
-        $admin = auth('admin')->user();
-        $fullName = $admin?->full_name ?? 'MPDC Staff';
-        $position = $admin?->position ?? 'Staff Member';
+    $admin = auth('admin')->user();
+    $fullName = $admin?->full_name ?? 'MPDC Staff';
+    $position = $admin?->position ?? 'Staff Member';
 
-        $nameParts = explode(' ', trim($fullName));
-        $firstInitial = mb_substr($nameParts[0] ?? 'A', 0, 1);
-        $lastInitial = count($nameParts) > 1 ? mb_substr(end($nameParts), 0, 1) : '';
-        $initials = strtoupper($firstInitial . $lastInitial);
+    $nameParts = explode(' ', trim($fullName));
+    $firstInitial = mb_substr($nameParts[0] ?? 'A', 0, 1);
+    $lastInitial = count($nameParts) > 1 ? mb_substr(end($nameParts), 0, 1) : '';
+    $initials = strtoupper($firstInitial . $lastInitial);
     @endphp
 
     <flux:sidebar sticky collapsible="mobile"
         class="bg-zinc-50 dark:bg-zinc-900 border-r border-zinc-200 dark:border-zinc-700">
         <flux:sidebar.header>
             <flux:sidebar.brand href="{{ route('admin.dashboard') }}" logo="{{ asset('malalag.png') }}"
-                name="MPDC Portal" class="px-2 font-bold"/>
+                name="MPDC Portal" class="px-2 font-bold" />
             <flux:sidebar.collapse class="lg:hidden" />
         </flux:sidebar.header>
 
@@ -34,6 +36,11 @@
             <flux:sidebar.item icon="squares-2x2" href="{{ route('admin.dashboard') }}"
                 :current="request()->routeIs('admin.dashboard')" wire:navigate>
                 Dashboard
+            </flux:sidebar.item>
+
+            <flux:sidebar.item icon="banknotes" href="{{ route('admin.payments.index') }}"
+                :current="request()->routeIs('admin.payments.*')" wire:navigate>
+                Payment Orders
             </flux:sidebar.item>
 
             <flux:sidebar.group expandable icon="document-duplicate" heading="Applications" class="grid"
@@ -59,13 +66,8 @@
                 </flux:sidebar.item>
             </flux:sidebar.group>
 
-            <flux:sidebar.group expandable icon="map-pin" heading="Geospatial Mapping" class="grid"
-                :expanded="request()->routeIs('admin.geospatial.*') || request()->routeIs('admin.inspections.*')">
-                <flux:sidebar.item href="{{ route('admin.geospatial.index') }}"
-                    :current="request()->routeIs('admin.geospatial.*')" wire:navigate>
-                    Interactive Zone Map
-                </flux:sidebar.item>
-
+            <flux:sidebar.group expandable icon="clipboard-document-check" heading="Site Inspections" class="grid"
+                :expanded="request()->routeIs('admin.inspections.*')">
                 <flux:sidebar.item href="{{ route('admin.inspections.index') }}"
                     :current="request()->routeIs('admin.inspections.index')" wire:navigate>
                     Inspection Schedule
@@ -74,6 +76,19 @@
                 <flux:sidebar.item href="{{ route('admin.inspections.logs') }}"
                     :current="request()->routeIs('admin.inspections.logs')" wire:navigate>
                     Inspection Logs
+                </flux:sidebar.item>
+            </flux:sidebar.group>
+
+            <flux:sidebar.group expandable icon="map-pin" heading="Geospatial Mapping" class="grid"
+                :expanded="request()->routeIs('admin.geospatial.*')">
+                <flux:sidebar.item href="{{ route('admin.geospatial.index') }}"
+                    :current="request()->routeIs('admin.geospatial.index')" wire:navigate>
+                    Interactive Zone Map
+                </flux:sidebar.item>
+
+                <flux:sidebar.item href="{{ route('admin.geospatial.create') }}"
+                    :current="request()->routeIs('admin.geospatial.create')" wire:navigate>
+                    Geotag Location
                 </flux:sidebar.item>
             </flux:sidebar.group>
 
@@ -90,18 +105,18 @@
                 </flux:sidebar.item>
             </flux:sidebar.group>
 
-            @if (auth()->user()?->role === 'admin')
-                <flux:sidebar.group expandable icon="cog-6-tooth" heading="System Administration" class="grid"
-                    :expanded="request()->routeIs('admin.users.*') || request()->routeIs('admin.roles.*') || request()->routeIs('admin.logs.*')">
-                    <flux:sidebar.item href="{{ route('admin.users.index') }}"
-                        :current="request()->routeIs('admin.users.*')" wire:navigate>
-                        User Management
-                    </flux:sidebar.item>
-                    <flux:sidebar.item href="{{ route('admin.logs.index') }}"
-                        :current="request()->routeIs('admin.logs.*')" wire:navigate>
-                        Activity & Audit Logs
-                    </flux:sidebar.item>
-                </flux:sidebar.group>
+            @if (auth('admin')->user()?->role === 'admin' || auth()->user()?->role === 'admin')
+            <flux:sidebar.group expandable icon="cog-6-tooth" heading="System Administration" class="grid"
+                :expanded="request()->routeIs('admin.users.*') || request()->routeIs('admin.roles.*') || request()->routeIs('admin.logs.*')">
+                <flux:sidebar.item href="{{ route('admin.users.index') }}"
+                    :current="request()->routeIs('admin.users.*')" wire:navigate>
+                    User Management
+                </flux:sidebar.item>
+                <flux:sidebar.item href="{{ route('admin.logs.index') }}" :current="request()->routeIs('admin.logs.*')"
+                    wire:navigate>
+                    Activity & Audit Logs
+                </flux:sidebar.item>
+            </flux:sidebar.group>
             @endif
         </flux:sidebar.nav>
 
@@ -152,7 +167,7 @@
         </flux:dropdown>
     </flux:header>
 
-    <flux:main>
+    <flux:main class="flex-1 flex flex-col">
         {{ $slot }}
     </flux:main>
 

@@ -71,8 +71,13 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Volt::route('/{clearance}/edit', 'admin.applications.edit')->name('edit');
         });
 
+        Route::prefix('payments')->name('payments.')->group(function () {
+            Volt::route('/', 'admin.payment.index')->name('index');
+        });
+
         Route::prefix('geospatial')->name('geospatial.')->group(function () {
             Volt::route('/', 'admin.geospatial.index')->name('index');
+            Volt::route('/create', 'admin.geospatial.create')->name('create');
         });
 
         Route::prefix('inspections')->name('inspections.')->group(function () {
@@ -108,5 +113,3 @@ Route::prefix('admin')->name('admin.')->group(function () {
         })->name('logout');
     });
 });
-
-
