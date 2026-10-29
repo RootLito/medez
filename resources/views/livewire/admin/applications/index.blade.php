@@ -20,7 +20,7 @@ state([
 $clearances = computed(function () {
     return LocClearance::query()
         ->where('is_walk_in', false)
-        ->where('is_archived', false) // <-- Only active records
+        ->where('is_archived', false) // Only active records
         ->with('client')
         ->when($this->search, function ($query) {
             $query->where(function ($q) {
@@ -44,16 +44,43 @@ $clearances = computed(function () {
         ->paginate(15);
 });
 
+// Guard: Only allow archiving if the application status is approved
 $confirmArchive = function ($id) {
+    $clearance = LocClearance::find($id);
+
+    if (! $clearance) return;
+
+    $rawStatus = strtolower($clearance->status ?? '');
+
+    if (! in_array($rawStatus, ['approve', 'approved'])) {
+        Flux::toast(
+            text: 'Cannot archive: Application must be approved first.',
+            variant: 'danger'
+        );
+        return;
+    }
+
     $this->archivingId = $id;
     Flux::modal('archive-modal')->show();
 };
 
-// Archive: Sets is_archived = true (Client can still see it!)
+// Archive: Sets is_archived = true
 $archiveApplication = function () {
     if (! $this->archivingId) return;
 
-    LocClearance::where('id', $this->archivingId)->update(['is_archived' => true]);
+    $clearance = LocClearance::find($this->archivingId);
+
+    if (! $clearance || ! in_array(strtolower($clearance->status ?? ''), ['approve', 'approved'])) {
+        Flux::toast(
+            text: 'Cannot archive: Application is not approved yet.',
+            variant: 'danger'
+        );
+        $this->archivingId = null;
+        Flux::modal('archive-modal')->close();
+        return;
+    }
+
+    $clearance->update(['is_archived' => true]);
 
     $this->archivingId = null;
     Flux::modal('archive-modal')->close();
@@ -153,12 +180,10 @@ $archiveApplication = function () {
                 <span>{{ $clearance->created_at?->format('M d, Y') ?? 'N/A' }}</span>
                 <div class="flex items-center gap-1.5">
                     <flux:button href="{{ route('admin.applications.show', $clearance->id) }}" wire:navigate
-                        variant="subtle" size="xs" icon="eye">
-                        View
+                        variant="filled" size="sm" icon-variant="outline" icon="eye">
                     </flux:button>
-                    <flux:button wire:click="confirmArchive({{ $clearance->id }})" variant="ghost" size="xs"
-                        icon="archive-box-arrow-down" class="text-amber-600 dark:text-amber-400">
-                        Archive
+                    <flux:button wire:click="confirmArchive({{ $clearance->id }})" variant="filled" icon-variant="outline" size="sm"
+                        icon="archive-box-arrow-down">
                     </flux:button>
                 </div>
             </div>
@@ -242,9 +267,9 @@ $archiveApplication = function () {
 
                     <flux:table.cell align="end">
                         <div class="flex items-center justify-end gap-1">
-                            <flux:button href="{{ route('admin.applications.show', $clearance->id) }}" variant="subtle"
+                            <flux:button href="{{ route('admin.applications.show', $clearance->id) }}" variant="filled" icon-variant="outline"
                                 size="sm" icon="eye" tooltip="View Details" wire:navigate />
-                            <flux:button wire:click="confirmArchive({{ $clearance->id }})" variant="subtle" size="sm"
+                            <flux:button wire:click="confirmArchive({{ $clearance->id }})" variant="filled" icon-variant="outline" size="sm"
                                 icon="archive-box-arrow-down" tooltip="Archive" />
                         </div>
                     </flux:table.cell>
@@ -261,19 +286,30 @@ $archiveApplication = function () {
     </div>
 
     <!-- Archive Confirmation Modal -->
-    <flux:modal name="archive-modal" class="w-full max-w-sm" backdrop="blur">
-        <div class="space-y-4">
-            <flux:heading size="lg">Archive Application?</flux:heading>
-            <flux:text class="text-xs sm:text-sm text-zinc-600 dark:text-zinc-300">
+    <flux:modal name="archive-modal" variant="dialog" class="w-full max-w-sm sm:max-w-md">
+        <div class="space-y-5">
+            <div class="flex items-center gap-3">
+                <div class="p-2.5 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400">
+                    <flux:icon name="archive-box-arrow-down" class="size-6" />
+                </div>
+                <div>
+                    <flux:heading size="lg">Archive Application?</flux:heading>
+                    <flux:subheading class="text-xs">Move to archives</flux:subheading>
+                </div>
+            </div>
+
+            <flux:text class="text-xs sm:text-sm text-zinc-600 dark:text-zinc-300 leading-relaxed">
                 This record will be moved to <strong>Archived Records</strong> and hidden from the active logbook. The
-                client can still view their application.
+                client can still view their application normally.
             </flux:text>
-            <div class="flex justify-end gap-2 pt-2">
+
+            <div class="flex items-center justify-end gap-2 pt-2 border-t border-zinc-100 dark:border-zinc-800">
                 <flux:modal.close>
                     <flux:button variant="subtle" size="sm">Cancel</flux:button>
                 </flux:modal.close>
+
                 <flux:button variant="primary" size="sm" wire:click="archiveApplication">
-                    Archive
+                    Yes, Archive Record
                 </flux:button>
             </div>
         </div>

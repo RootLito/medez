@@ -166,13 +166,13 @@ with(function () {
                 class="mt-3.5 pt-3 border-t border-zinc-100 dark:border-zinc-800/80 flex items-center justify-end gap-2">
                 <flux:button wire:click="openApplication({{ $item->id }}, 'view')" size="sm" variant="subtle"
                     icon-trailing="arrow-right" class="flex-1 sm:flex-none justify-center">
-                    View Application
+                    View
                 </flux:button>
 
                 @if ($item->status === 'resubmit')
                 <flux:button wire:click="openApplication({{ $item->id }}, 'edit')" size="sm" variant="primary"
                     icon="pencil" class="flex-1 sm:flex-none justify-center">
-                    Update Application
+                    Update
                 </flux:button>
                 @endif
             </div>

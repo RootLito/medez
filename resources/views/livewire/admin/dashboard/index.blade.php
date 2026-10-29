@@ -164,7 +164,7 @@ $refreshData = function () {
         </div>
 
         <div class="flex items-center gap-2">
-            <flux:button wire:click="refreshData" icon="arrow-path" size="sm" variant="subtle">
+            <flux:button type="button" onclick="window.location.reload()" icon="arrow-path" size="sm" variant="filled" icon-variant="outline">
                 Refresh
             </flux:button>
             <flux:button variant="primary" icon="plus" size="sm" wire:navigate

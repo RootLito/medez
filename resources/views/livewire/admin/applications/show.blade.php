@@ -21,22 +21,25 @@ mount(function (LocClearance $clearance) {
 
 $submitDecision = function () {
     $this->validate([
-        'status' => ['required', 'in:resubmit,approve,rejected'],
+        'status' => ['required', 'in:resubmit,approve,approved,rejected'],
         'remarks' => ['nullable', 'string', 'max:1000'],
     ]);
+
+    // Ensure status aligns with app_statuses enum (approve)
+    $dbStatus = $this->status === 'approved' ? 'approve' : $this->status;
 
     // 1. Create notification log for client
     AppStatus::create([
         'application_id' => $this->clearance->id,
         'admin_id' => auth('admin')->id() ?? auth()->id(),
-        'status' => $this->status,
+        'status' => $dbStatus,
         'remarks' => $this->remarks,
         'is_read' => false,
     ]);
 
     // 2. Update clearance status
     $this->clearance->update([
-        'status' => $this->status,
+        'status' => $dbStatus,
     ]);
 
     // Reset remarks input
@@ -48,32 +51,41 @@ $submitDecision = function () {
 ?>
 
 <div class="space-y-6" x-data="{ modalOpen: false, activeImage: '' }">
-    <!-- Flux Header & Actions -->
+    <!-- Header & Actions -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 print:hidden">
         <div>
             <div class="flex items-center gap-3">
-                <flux:heading size="xl" level="1">Application #{{ str_pad($clearance->id, 5, '0', STR_PAD_LEFT) }}
+                <flux:heading size="xl" level="1">
+                    Application #{{ $clearance->application_no ?? str_pad($clearance->id, 5, '0', STR_PAD_LEFT) }}
                 </flux:heading>
                 @php
-                $statusColor = match($clearance->status) {
-                'approve' => 'green',
+                $rawStatus = strtolower($clearance->status ?? 'pending');
+                $statusColor = match($rawStatus) {
+                'approve', 'approved' => 'green',
+                'resubmit' => 'yellow',
+                'pending' => 'blue',
                 'rejected' => 'red',
-                'resubmit' => 'amber',
-                default => 'yellow',
+                default => 'zinc',
+                };
+                $displayStatus = match($rawStatus) {
+                'approve', 'approved' => 'Approved',
+                'resubmit' => 'Resubmit',
+                'pending' => 'Pending',
+                'rejected' => 'Rejected',
+                default => ucfirst($rawStatus),
                 };
                 @endphp
-                <flux:badge size="sm" :color="$statusColor" class="capitalize">
-                    {{ $clearance->status ? ($clearance->status === 'approve' ? 'Approved' :
-                    ucfirst($clearance->status)) : 'Pending' }}
+                <flux:badge size="sm" :color="$statusColor">
+                    {{ $displayStatus }}
                 </flux:badge>
             </div>
             <flux:subheading>Submitted on {{ $clearance->created_at->format('M d, Y \a\t h:i A') }}</flux:subheading>
         </div>
 
         <div class="flex items-center gap-2">
-            <flux:button icon="arrow-left" variant="subtle" href="{{ route('admin.applications.pending') }}"
-                wire:navigate>
-                Back to Pending List
+            <flux:button href="{{ route('admin.applications.index') }}" wire:navigate variant="subtle" size="sm"
+                icon="arrow-left">
+                Back to Logbook
             </flux:button>
         </div>
     </div>
@@ -81,7 +93,7 @@ $submitDecision = function () {
     <!-- Main Side-by-Side Layout -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
 
-        <!-- LEFT 2 COLUMNS: Details wrapped in Card Containers -->
+        <!-- LEFT 2 COLUMNS: Application Form Specs -->
         <div class="lg:col-span-2 space-y-6 text-zinc-900 dark:text-zinc-100 text-sm font-sans print:col-span-3">
 
             <!-- Card 1: Applicant & Corporation Information -->
@@ -291,10 +303,10 @@ $submitDecision = function () {
 
         </div>
 
-        <!-- RIGHT 1 COLUMN: Sticky Action Panel with Requirements & Decision -->
+        <!-- RIGHT 1 COLUMN: Action Panel & Decision -->
         <div class="lg:col-span-1 space-y-6 print:hidden">
 
-            <!-- Requirements Inspection Card -->
+            <!-- Uploaded Requirements Inspection Card -->
             <div
                 class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-5 shadow-sm space-y-4">
                 <div>
@@ -353,8 +365,8 @@ $submitDecision = function () {
                 </div>
             </div>
 
+            <!-- Decision Card -->
             @if (! $clearance->is_archived)
-            <!-- Decision Card (Active Mode) -->
             <div
                 class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-5 shadow-sm space-y-5">
                 <div>
@@ -371,9 +383,9 @@ $submitDecision = function () {
                         <label class="block text-xs font-medium text-zinc-700 dark:text-zinc-300">Status Decision <span
                                 class="text-red-500">*</span></label>
                         <flux:select wire:model="status" required>
-                            <flux:select.option value="approve">Approve</flux:select.option>
+                            <flux:select.option value="approve">Approved</flux:select.option>
                             <flux:select.option value="resubmit">Resubmit (Needs Revision)</flux:select.option>
-                            <flux:select.option value="rejected">Reject</flux:select.option>
+                            <flux:select.option value="rejected">Rejected</flux:select.option>
                         </flux:select>
                         @error('status') <span class="text-xs text-red-500">{{ $message }}</span> @enderror
                     </div>
@@ -408,7 +420,7 @@ $submitDecision = function () {
             @endif
 
 
-            <!-- Decision History Timeline (Always visible for audit/reference) -->
+            <!-- Decision History Timeline -->
             @php
             $statusLogs = \App\Models\AppStatus::where('application_id', $clearance->id)->latest()->get();
             @endphp
@@ -421,18 +433,26 @@ $submitDecision = function () {
                 <div class="space-y-3 max-h-60 overflow-y-auto pr-1">
                     @foreach ($statusLogs as $log)
                     @php
-                    $logColor = match(strtolower($log->status)) {
+                    $rawLogStatus = strtolower($log->status);
+                    $logColor = match($rawLogStatus) {
                     'approve', 'approved' => 'green',
                     'resubmit' => 'yellow',
                     'pending' => 'blue',
                     default => 'red',
+                    };
+                    $displayLogStatus = match($rawLogStatus) {
+                    'approve', 'approved' => 'Approved',
+                    'resubmit' => 'Resubmit',
+                    'pending' => 'Pending',
+                    'rejected' => 'Rejected',
+                    default => ucfirst($rawLogStatus),
                     };
                     @endphp
                     <div
                         class="p-2.5 rounded-lg bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700/60 space-y-1 text-xs">
                         <div class="flex justify-between items-center">
                             <flux:badge size="sm" :color="$logColor">
-                                {{ ucfirst($log->status) }}
+                                {{ $displayLogStatus }}
                             </flux:badge>
                             <span class="text-[10px] text-zinc-400">{{ $log->created_at->diffForHumans() }}</span>
                         </div>

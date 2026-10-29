@@ -44,11 +44,6 @@ $restoreApplication = function ($id) {
             <flux:heading size="xl" level="1" class="text-xl sm:text-2xl font-bold">Archived Records</flux:heading>
             <flux:subheading class="text-xs sm:text-sm">Historical and archived application records.</flux:subheading>
         </div>
-
-        <flux:button href="{{ route('admin.applications.index') }}" wire:navigate variant="subtle" size="sm"
-            icon="arrow-left">
-            Back to Active Logbook
-        </flux:button>
     </div>
 
     <!-- Search Toolbar -->
@@ -87,12 +82,12 @@ $restoreApplication = function ($id) {
 
             <!-- Card Actions -->
             <div class="flex items-center justify-end gap-1.5 pt-2 border-t border-zinc-100 dark:border-zinc-800">
-                <flux:button href="{{ route('admin.applications.show', $record->id) }}" wire:navigate variant="subtle"
-                    size="xs" icon="eye">
+                <flux:button href="{{ route('admin.applications.show', $record->id) }}" wire:navigate variant="filled"
+                    icon-variant="outline" size="xs" icon="eye">
                     View
                 </flux:button>
-                <flux:button wire:click="restoreApplication({{ $record->id }})" variant="subtle" size="xs"
-                    icon="arrow-path">
+                <flux:button wire:click="restoreApplication({{ $record->id }})" variant="filled" icon-variant="outline"
+                    size="xs" icon="arrow-path">
                     Restore
                 </flux:button>
             </div>
@@ -146,10 +141,10 @@ $restoreApplication = function ($id) {
 
                     <flux:table.cell align="end">
                         <div class="flex items-center justify-end gap-1">
-                            <flux:button href="{{ route('admin.applications.show', $record->id) }}" variant="subtle"
-                                size="sm" icon="eye" tooltip="View Details" wire:navigate />
-                            <flux:button wire:click="restoreApplication({{ $record->id }})" variant="subtle" size="sm"
-                                icon="arrow-path" tooltip="Restore Record" />
+                            <flux:button href="{{ route('admin.applications.show', $record->id) }}" variant="filled"
+                                icon-variant="outline" size="sm" icon="eye" tooltip="View Details" wire:navigate />
+                            <flux:button wire:click="restoreApplication({{ $record->id }})" variant="filled"
+                                icon-variant="outline" size="sm" icon="arrow-path" tooltip="Restore Record" />
                         </div>
                     </flux:table.cell>
                 </flux:table.row>

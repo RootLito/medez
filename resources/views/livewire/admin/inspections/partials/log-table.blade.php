@@ -124,7 +124,7 @@
                 </flux:table.cell>
 
                 <flux:table.cell align="end">
-                    <flux:button wire:click="openLogDetail({{ $log->id }})" variant="subtle" size="sm"
+                    <flux:button wire:click="openLogDetail({{ $log->id }})" variant="filled" icon-variant="outline" size="sm"
                         icon="document-magnifying-glass" tooltip="View Full Report" />
                 </flux:table.cell>
             </flux:table.row>

@@ -143,9 +143,9 @@
 
                 <flux:table.cell align="end">
                     <div class="flex items-center justify-end gap-1">
-                        <flux:button wire:click="openPrintModal({{ $order->id }})" variant="subtle" size="sm"
+                        <flux:button wire:click="openPrintModal({{ $order->id }})" variant="filled" icon-variant="outline" size="sm"
                             icon="printer" tooltip="Print Order Slip" />
-                        <flux:button wire:click="openPaymentModal({{ $order->id }})" variant="subtle" size="sm"
+                        <flux:button wire:click="openPaymentModal({{ $order->id }})" variant="filled" icon-variant="outline" size="sm"
                             icon="banknotes" tooltip="Record Treasury OR" />
                     </div>
                 </flux:table.cell>

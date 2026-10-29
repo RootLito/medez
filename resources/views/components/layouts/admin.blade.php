@@ -46,20 +46,18 @@
             <flux:sidebar.group expandable icon="document-duplicate" heading="Applications" class="grid"
                 :expanded="request()->routeIs('admin.applications.*')">
                 <flux:sidebar.item href="{{ route('admin.applications.index') }}"
-                    :current="request()->routeIs('admin.applications.index')" wire:navigate>
+                    :current="request()->routeIs('admin.applications.index') || request()->routeIs('admin.applications.show')"
+                    wire:navigate>
                     Digital Logbook
                 </flux:sidebar.item>
-
                 <flux:sidebar.item href="{{ route('admin.applications.walkin-index') }}"
-                    :current="request()->routeIs('admin.applications.walkin-index')" wire:navigate>
+                    :current="request()->routeIs('admin.applications.walkin-*')" wire:navigate>
                     Encode Walk-In
                 </flux:sidebar.item>
-
                 <flux:sidebar.item href="{{ route('admin.applications.pending') }}"
                     :current="request()->routeIs('admin.applications.pending')" wire:navigate>
                     Pending Verification
                 </flux:sidebar.item>
-
                 <flux:sidebar.item href="{{ route('admin.applications.archived') }}"
                     :current="request()->routeIs('admin.applications.archived')" wire:navigate>
                     Archived Records

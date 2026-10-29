@@ -53,16 +53,16 @@
             </span>
             <div class="flex items-center gap-1.5">
                 @if($inspection->status !== 'completed' && $inspection->status !== 'cancelled')
-                <flux:button wire:click="openCompleteModal({{ $inspection->id }})" variant="primary" size="xs"
+                <flux:button wire:click="openCompleteModal({{ $inspection->id }})" variant="filled" icon-variant="outline" size="xs"
                     icon="check">
                     Log Findings
                 </flux:button>
-                <flux:button wire:click="cancelInspection({{ $inspection->id }})" variant="ghost" size="xs"
+                <flux:button wire:click="cancelInspection({{ $inspection->id }})" variant="filled" icon-variant="outline" size="xs"
                     icon="x-mark" class="text-red-600">
                     Cancel
                 </flux:button>
                 @else
-                <flux:button wire:click="openCompleteModal({{ $inspection->id }})" variant="subtle" size="xs"
+                <flux:button wire:click="openCompleteModal({{ $inspection->id }})" variant="filled" icon-variant="outline" size="xs"
                     icon="eye">
                     View Findings
                 </flux:button>
@@ -152,12 +152,12 @@
                 <flux:table.cell align="end">
                     <div class="flex items-center justify-end gap-1">
                         @if($inspection->status !== 'completed' && $inspection->status !== 'cancelled')
-                        <flux:button wire:click="openCompleteModal({{ $inspection->id }})" variant="subtle" size="sm"
+                        <flux:button wire:click="openCompleteModal({{ $inspection->id }})" variant="filled" icon-variant="outline" size="sm"
                             icon="clipboard-document-check" tooltip="Log Findings & Complete" />
-                        <flux:button wire:click="cancelInspection({{ $inspection->id }})" variant="subtle" size="sm"
+                        <flux:button wire:click="cancelInspection({{ $inspection->id }})" variant="filled" icon-variant="outline" size="sm"
                             icon="x-mark" class="text-red-500" tooltip="Cancel Inspection" />
                         @else
-                        <flux:button wire:click="openCompleteModal({{ $inspection->id }})" variant="subtle" size="sm"
+                        <flux:button wire:click="openCompleteModal({{ $inspection->id }})" variant="filled" icon-variant="outline" size="sm"
                             icon="eye" tooltip="View Findings" />
                         @endif
                     </div>

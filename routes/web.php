@@ -55,17 +55,16 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Volt::route('/dashboard', 'admin.dashboard.index')->name('dashboard');
 
         Route::prefix('applications')->name('applications.')->group(function () {
-            Volt::route('/', 'admin.applications.index')->name('index');
-            Volt::route('/applications/{clearance}', 'admin.applications.show')->name('applications.show');
+            Volt::route('/', 'admin.applications.index')->name('index');                   
+            Volt::route('/pending', 'admin.applications.pending')->name('pending');           
+            Volt::route('/archived', 'admin.applications.archived')->name('archived');       
 
-            Volt::route('/walkin', 'admin.applications.walkin-index')->name('walkin-index');
-            Volt::route('/walkin/create', 'admin.applications.walkin-create')->name('walkin-create');
-            Volt::route('/walkin/{locClearance}', 'admin.applications.walkin-show')->name('walkin-show');
-            Volt::route('/walkin/{locClearance}/edit', 'admin.applications.walkin-edit')->name('walkin-edit');
-
-
-            Volt::route('/pending', 'admin.applications.pending')->name('pending');
-            Volt::route('/archived', 'admin.applications.archived')->name('archived');
+            Route::prefix('walkin')->group(function () {
+                Volt::route('/', 'admin.applications.walkin.index')->name('walkin-index');
+                Volt::route('/create', 'admin.applications.walkin.create')->name('walkin-create');
+                Volt::route('/{clearance}', 'admin.applications.walkin.show')->name('walkin-show');
+                Volt::route('/{clearance}/edit', 'admin.applications.walkin.edit')->name('walkin-edit');
+            });
 
             Volt::route('/{clearance}', 'admin.applications.show')->name('show');
             Volt::route('/{clearance}/edit', 'admin.applications.edit')->name('edit');
